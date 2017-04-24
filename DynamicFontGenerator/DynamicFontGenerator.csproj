@@ -61,6 +61,8 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DfgContext.cs" />
+    <Compile Include="DynamicFontDescriptionProcessor.cs" />
     <Compile Include="DynamicSpriteFontWriter.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
