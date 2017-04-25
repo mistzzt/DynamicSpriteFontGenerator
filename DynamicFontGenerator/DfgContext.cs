@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace DynamicFontGenerator
 {
-	class DfgContext : ContentProcessorContext
+	public sealed class DfgContext : ContentProcessorContext
 	{
 		private readonly Generator _g;
 

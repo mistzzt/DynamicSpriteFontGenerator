@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Content.Pipeline;
 namespace DynamicFontGenerator
 {
 	[ContentTypeWriter]
-	public class DynamicSpriteFontWriter : ContentTypeWriter<DynamicSpriteFont>
+	public sealed class DynamicSpriteFontWriter : ContentTypeWriter<DynamicSpriteFont>
 	{
 		private const int LineSpacing = 21;
 
@@ -24,9 +24,9 @@ namespace DynamicFontGenerator
 			output.Write(LineSpacing);
 			output.Write(DefaultCharacter);
 
-			output.Write(Generator._pages.Length);
+			output.Write(Generator.Pages.Length);
 
-			foreach (var page in Generator._pages)
+			foreach (var page in Generator.Pages)
 			{
 				output.WriteObject(page.Item1);
 				output.WriteObject(page.Item2.Glyphs);

@@ -8,9 +8,9 @@ using Microsoft.Xna.Framework;
 
 namespace DynamicFontGenerator
 {
-	class DynamicFontDescriptionProcessor : ContentProcessor<FontDescription[], Tuple<Texture2DContent, FontPage>[]>
+	public sealed class DynamicFontDescriptionProcessor : ContentProcessor<FontDescription[], Tuple<Texture2DContent, FontPage>[]>
 	{
-		private FontDescriptionProcessor _fdp = new FontDescriptionProcessor();
+		private readonly FontDescriptionProcessor _fdp = new FontDescriptionProcessor();
 
 		public override Tuple<Texture2DContent, FontPage>[] Process(FontDescription[] input, ContentProcessorContext context)
 		{
