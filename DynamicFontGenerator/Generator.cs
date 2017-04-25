@@ -19,16 +19,6 @@ namespace DynamicFontGenerator
 
 		private static void Main()
 		{
-			DynamicSpriteFontReader.ReadPage orp = (font, pages) =>
-			{
-				for (var i = 0; i < pages.Length; i++)
-				{
-					pages[i].Texture.SaveAsPng(File.Create("Test\\" + i + ".png"), pages[i].Texture.Width, pages[i].Texture.Height);
-				}
-			};
-
-			//DynamicSpriteFontReader.OnReadPage = orp;
-
 			using (var game = new Generator())
 			{
 				game.Run();
@@ -50,8 +40,6 @@ namespace DynamicFontGenerator
 			_compiler = new ContentCompiler();
 			_processor = new DynamicFontDescriptionProcessor();
 			_context = new DfgContext(this);
-
-
 
 			Content.RootDirectory = "Content";
 		}
@@ -84,7 +72,7 @@ namespace DynamicFontGenerator
 
 		private void CompileFont(string fileName, string enFontName, float enSize, string cnFontName, float cnSize)
 		{
-			Console.WriteLine("Start compiling {0} with enFont {1}({2}) and cnSize {3}({4})...", fileName, enFontName, enSize, cnFontName, cnSize);
+			Console.WriteLine("Start compiling {0} with enFont {1}({2}) and cnFont {3}({4})...", fileName, enFontName, enSize, cnFontName, cnSize);
 
 			var descriptions = new List<FontDescription>();
 
