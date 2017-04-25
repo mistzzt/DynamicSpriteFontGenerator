@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
 using Microsoft.Xna.Framework.Graphics;
-using ReLogic.Graphics;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +15,6 @@ namespace DynamicFontGenerator
 	public sealed class Generator : Game
 	{
 		private readonly GraphicsDeviceManager _graphics;
-
-		internal static Tuple<Texture2DContent, FontPage>[] Pages;
 
 		private static void Main()
 		{
@@ -78,7 +75,10 @@ namespace DynamicFontGenerator
 
 			var descriptions = new List<FontDescription>();
 
-			var des = new FontDescription(enFontName, enSize, 0f);
+			var des = new FontDescription(enFontName, enSize, 0f)
+			{
+				DefaultCharacter = '*'
+			};
 			foreach (var c in _englishChars)
 			{
 				des.Characters.Add(c);
@@ -107,11 +107,11 @@ namespace DynamicFontGenerator
 				descriptions.Add(des);
 			}
 
-			Pages = _processor.Process(descriptions.ToArray(), _context);
+			var content = _processor.Process(descriptions.ToArray(), _context);
 
 			using (var fs = new FileStream(fileName, FileMode.Create))
 			{
-				_compiler.Compile(fs, new DynamicSpriteFont(0, 0, ' '), TargetPlatform.Windows, GraphicsProfile.Reach, true, Environment.CurrentDirectory, Environment.CurrentDirectory);
+				_compiler.Compile(fs, content, TargetPlatform.Windows, GraphicsProfile.Reach, true, Environment.CurrentDirectory, Environment.CurrentDirectory);
 			}
 		}
 

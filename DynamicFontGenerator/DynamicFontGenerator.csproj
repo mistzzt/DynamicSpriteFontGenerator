@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="DfgContext.cs" />
     <Compile Include="DynamicFontDescriptionProcessor.cs" />
+    <Compile Include="DynamicSpriteFontContent.cs" />
     <Compile Include="DynamicSpriteFontWriter.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

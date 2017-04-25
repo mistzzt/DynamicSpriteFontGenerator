@@ -1,38 +1,33 @@
 ﻿using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
-using ReLogic.Graphics;
 using Microsoft.Xna.Framework.Content.Pipeline;
 
 namespace DynamicFontGenerator
 {
 	[ContentTypeWriter]
-	public sealed class DynamicSpriteFontWriter : ContentTypeWriter<DynamicSpriteFont>
+	public sealed class DynamicSpriteFontWriter : ContentTypeWriter<DynamicSpriteFontContent>
 	{
-		private const int LineSpacing = 21;
-
-		private const float CharacterSpacing = 0;
-
-		private const char DefaultCharacter = '*';
-
 		public override string GetRuntimeReader(TargetPlatform targetPlatform)
 		{
 			return "ReLogic.Graphics.DynamicSpriteFontReader, ReLogic, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
 		}
 
-		protected override void Write(ContentWriter output, DynamicSpriteFont value)
+		protected override void Write(ContentWriter output, DynamicSpriteFontContent value)
 		{
-			output.Write(CharacterSpacing);
-			output.Write(LineSpacing);
-			output.Write(DefaultCharacter);
+			output.Write(value.Spacing);
+			output.Write(value.LineSpacing);
+			output.Write(value.DefaultCharacter);
 
-			output.Write(Generator.Pages.Length);
+			output.Write(value.Pages.Count);
 
-			foreach (var page in Generator.Pages)
+			for (var index = 0; index < value.Pages.Count; index++)
 			{
-				output.WriteObject(page.Item1);
-				output.WriteObject(page.Item2.Glyphs);
-				output.WriteObject(page.Item2.Padding);
-				output.WriteObject(page.Item2.Characters);
-				output.WriteObject(page.Item2.Kerning);
+				var page = value.Pages[index];
+
+				output.WriteObject(value.Textures[index]);
+				output.WriteObject(page.Glyphs);
+				output.WriteObject(page.Padding);
+				output.WriteObject(page.Characters);
+				output.WriteObject(page.Kerning);
 			}
 		}
 	}
