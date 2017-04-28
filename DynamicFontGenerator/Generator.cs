@@ -1,13 +1,11 @@
-﻿#define ORIGIN
-
-using System;
+﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content.Pipeline;
-using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
-using System.Collections.Generic;
+using System.Reflection;
+using ReLogic.Content.Pipeline;
 using System.Linq;
 
 namespace DynamicFontGenerator
@@ -26,19 +24,14 @@ namespace DynamicFontGenerator
 
 		public Generator()
 		{
+			ReLogicPipeLineAssembly = typeof(DynamicFontDescription).Assembly;
+
 			_graphics = new GraphicsDeviceManager(this);
-			_englishChars = new List<char>
-			{
-				'©'
-			};
-			for (var c = '!'; c < '~'; c++)
-				_englishChars.Add(c);
-			_characters = File.ReadAllText("chars.txt")
-									.Except(_englishChars)
-									.ToArray();
 			_compiler = new ContentCompiler();
-			_processor = new DynamicFontDescriptionProcessor();
 			_context = new DfgContext(this);
+			_importContext = new DfgImporterContext();
+			_importer = (ContentImporter<DynamicFontDescription>)Activator.CreateInstance(ReLogicPipeLineAssembly.GetType("ReLogic.Content.Pipeline.DynamicFontImporter"));
+			_processor = new DynamicFontProcessor();
 
 			Content.RootDirectory = "Content";
 		}
@@ -54,77 +47,54 @@ namespace DynamicFontGenerator
 
 		private void CompileFonts()
 		{
-#if ORIGIN
-			CompileFont("Mouse_Text.xnb", "CLINTON", 17f, "方正准圆_GBK", 14.2f);
-			CompileFont("Death_Text.xnb", "CLINTON", 32f, "方正准圆_GBK", 31f);
-			CompileFont("Item_Stack.xnb", "CLINTON", 14f, "方正准圆_GBK", 12f);
-			CompileFont("Combat_Text.xnb", "CLINTON", 20f, "方正准圆_GBK", 18f);
-			CompileFont("Combat_Crit.xnb", "CLINTON", 18f, "方正准圆_GBK", 16f);
-#else
-			CompileFont("Mouse_Text.xnb", "方正准圆_GBK", 14.55f, "方正准圆_GBK", 14.55f);
-			CompileFont("Death_Text.xnb", "方正准圆_GBK", 31f, "方正准圆_GBK", 31f);
-			CompileFont("Item_Stack.xnb", "方正准圆_GBK", 13.2f, "方正准圆_GBK", 13.2f);
-			CompileFont("Combat_Text.xnb", "方正准圆_GBK", 18f, "方正准圆_GBK", 18f);
-			CompileFont("Combat_Crit.xnb", "方正准圆_GBK", 16f, "方正准圆_GBK", 16f);
-#endif
-		}
+			var descFiles = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.dynamicfont").ToList();
 
-		private void CompileFont(string fileName, string enFontName, float enSize, string cnFontName, float cnSize)
-		{
-			Console.WriteLine("Start compiling {0} with enFont {1}({2}) and cnFont {3}({4})...", fileName, enFontName, enSize, cnFontName, cnSize);
+			Console.WriteLine("Description file detected: {0}", descFiles.Count);
 
-			var descriptions = new List<FontDescription>();
-
-			var des = new FontDescription(enFontName, enSize, 0f)
+			foreach (var descFilePath in descFiles)
 			{
-				DefaultCharacter = '*'
-			};
-			foreach (var c in _englishChars)
-			{
-				des.Characters.Add(c);
+				var descFileName = Path.GetFileName(descFilePath);
+
+				Console.WriteLine("* {0}", descFileName);
 			}
-			descriptions.Add(des);
 
-			var current = 0;
-			des = new FontDescription(cnFontName, cnSize, 0f);
-			for (var index = 0; index < _characters.Length; index++)
+			Console.WriteLine();
+
+			foreach (var descFilePath in descFiles)
 			{
-				var c = _characters[index];
-				if (current + 1 > MaxCharsPerPage)
+				var descFileName = Path.GetFileName(descFilePath);
+
+				Console.Write("Start loading description file: {0}", descFileName);
+
+				var description = _importer.Import(descFilePath, _importContext);
+				Console.WriteLine(" ..Done!");
+
+				var fileName = Path.GetFileNameWithoutExtension(descFileName) + ".xnb";
+
+				Console.Write("Start compiling font content file: {0}", fileName);
+
+				var content = _processor.Process(description, _context);
+
+				using (var fs = new FileStream(fileName, FileMode.Create))
 				{
-					descriptions.Add(des);
-					des = new FontDescription(cnFontName, cnSize, 0f);
-					current = 0;
-
-					Console.WriteLine("Adding page {0}", descriptions.Count);
+					_compiler.Compile(fs, content, TargetPlatform.Windows, GraphicsProfile.Reach, true, Environment.CurrentDirectory, Environment.CurrentDirectory);
 				}
-				des.Characters.Add(c);
-				current++;
-			}
 
-			if (!descriptions.Contains(des))
-			{
-				descriptions.Add(des);
-			}
-
-			var content = _processor.Process(descriptions.ToArray(), _context);
-
-			using (var fs = new FileStream(fileName, FileMode.Create))
-			{
-				_compiler.Compile(fs, content, TargetPlatform.Windows, GraphicsProfile.Reach, true, Environment.CurrentDirectory, Environment.CurrentDirectory);
+				Console.WriteLine(" ..Done!");
+				Console.WriteLine();
 			}
 		}
 
 		private readonly ContentCompiler _compiler;
 
-		private readonly DynamicFontDescriptionProcessor _processor;
-
 		private readonly DfgContext _context;
 
-		private readonly char[] _characters;
+		private readonly DfgImporterContext _importContext;
 
-		private readonly List<char> _englishChars;
+		private readonly ContentImporter<DynamicFontDescription> _importer;
 
-		private const int MaxCharsPerPage = 25 * 11;
+		private readonly DynamicFontProcessor _processor;
+
+		public readonly Assembly ReLogicPipeLineAssembly;
 	}
 }
