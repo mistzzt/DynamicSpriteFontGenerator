@@ -12,6 +12,7 @@ namespace DynamicFontGenerator
 {
 	public sealed class Generator : Game
 	{
+		// ReSharper disable once NotAccessedField.Local
 		private readonly GraphicsDeviceManager _graphics;
 
 		private static void Main()
@@ -25,9 +26,16 @@ namespace DynamicFontGenerator
 		public Generator()
 		{
 			ReLogicPipeLineAssembly = typeof(DynamicFontDescription).Assembly;
+			XnaPipeLineAssembly = typeof(ContentCompiler).Assembly;
 
+			var type = XnaPipeLineAssembly.GetType("Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler.ContentCompiler");
+
+			var constructor = type
+				.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
+				.First();
+			_compiler = (ContentCompiler)constructor.Invoke(null);
+			_compileMethod = type.GetMethod("Compile", BindingFlags.NonPublic | BindingFlags.Instance);
 			_graphics = new GraphicsDeviceManager(this);
-			_compiler = new ContentCompiler();
 			_context = new DfgContext(this);
 			_importContext = new DfgImporterContext();
 			_importer = (ContentImporter<DynamicFontDescription>)Activator.CreateInstance(ReLogicPipeLineAssembly.GetType("ReLogic.Content.Pipeline.DynamicFontImporter"));
@@ -71,13 +79,20 @@ namespace DynamicFontGenerator
 
 				var fileName = Path.GetFileNameWithoutExtension(descFileName) + ".xnb";
 
-				Console.Write("Start compiling font content file: {0}", fileName);
-
+				Console.Write("Start compiling font.");
 				var content = _processor.Process(description, _context);
+				Console.WriteLine(".Done!");
+
+				Console.Write("Start compiling font content file: {0}", fileName);
 
 				using (var fs = new FileStream(fileName, FileMode.Create))
 				{
-					_compiler.Compile(fs, content, TargetPlatform.Windows, GraphicsProfile.Reach, true, Environment.CurrentDirectory, Environment.CurrentDirectory);
+					_compileMethod.Invoke(_compiler,
+						new object[]
+						{
+							fs, content, TargetPlatform.Windows, GraphicsProfile.Reach, true, Environment.CurrentDirectory,
+							Environment.CurrentDirectory
+						});
 				}
 
 				Console.WriteLine(" ..Done!");
@@ -86,6 +101,8 @@ namespace DynamicFontGenerator
 		}
 
 		private readonly ContentCompiler _compiler;
+
+		private readonly MethodInfo _compileMethod;
 
 		private readonly DfgContext _context;
 
@@ -96,5 +113,7 @@ namespace DynamicFontGenerator
 		private readonly DynamicFontProcessor _processor;
 
 		public readonly Assembly ReLogicPipeLineAssembly;
+
+		public readonly Assembly XnaPipeLineAssembly;
 	}
 }
