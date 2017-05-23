@@ -8,11 +8,13 @@ namespace DynamicFontGenerator
 	{
 		private readonly Generator _g;
 
-		public override ContentBuildLogger Logger => throw new NotImplementedException();
+		private readonly DfgLogger _logger;
+
+		public override ContentBuildLogger Logger => _logger;
 
 		public override OpaqueDataDictionary Parameters => throw new NotImplementedException();
 
-		public override TargetPlatform TargetPlatform => throw new NotImplementedException();
+		public override TargetPlatform TargetPlatform => TargetPlatform.Windows;
 
 		public override GraphicsProfile TargetProfile => _g.GraphicsDevice.GraphicsProfile;
 
@@ -24,7 +26,11 @@ namespace DynamicFontGenerator
 
 		public override string IntermediateDirectory => throw new NotImplementedException();
 
-		public DfgContext(Generator g) => _g = g;
+		public DfgContext(Generator g)
+		{
+			_g = g;
+			_logger = new DfgLogger();
+		}
 
 		public override void AddDependency(string filename) => throw new NotImplementedException();
 

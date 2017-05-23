@@ -80,6 +80,7 @@
   <ItemGroup>
     <Compile Include="DfgContext.cs" />
     <Compile Include="DfgImporterContext.cs" />
+    <Compile Include="DfgLogger.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
